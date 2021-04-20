@@ -1,6 +1,7 @@
 const sequelize = require('sequelize');
 
 
+
 //koa 框架所以這個形式, 與sequelize本身無關
 module.exports = async (ctx, next) => {    
     
@@ -29,7 +30,9 @@ module.exports = async (ctx, next) => {
         create_date:Sequelize.BIGINT,
         enabled: Sequelize.TINYINT
     },{freezeTableName: true //table 名稱設定不要自動加s ex: chatrooms})
-
+       
+    //匯入 已寫好的 model
+    const Chatroom_user = sequelize.import("./schema/chatroom_user")
     
     Chatroom.findOne({
         where:{
@@ -39,9 +42,30 @@ module.exports = async (ctx, next) => {
 
 
     //事務控制
-    // sequelize.transaction((t)=>{
-
-    // })
+    sequelize.transaction((t)=>{
+        return Chatroom_user.create({ 
+            chatroom_id: chatroom_id, 
+            create_date: date, 
+            user_id: user_id, 
+            role_id: role_id }, { transaction: t })
+            .then(d => {
+                //業務邏輯 %%%%
+                ///-----
+                return Chatroom_user.findAll({/*搜尋條件*/},{ transaction: t})
+            .then();
+        });
+    })//沒有EXCEPTION 則自動COMMIT
+    
+    sequelize.transaction((t)=>{
+        return Chatroom_user.create({/**/ }, { transaction: t })
+            .then(d => {                
+                return Chatroom_user.findAll({/*搜尋條件*/},{ transaction: t})
+                .then(f =>{
+                    thrwo(400) // 噴錯則事務rollback
+                });
+        });
+    })
+    
     
 
     ctx.status = 200
