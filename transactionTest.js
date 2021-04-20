@@ -1,32 +1,34 @@
-const sequelize = require('../../../../../infra/utils/database')
-const { QueryTypes, Sequelize } = require('sequelize');
-const errorMessage = require('../../../../../infra/utils/errorMessageMap');
-const Joi = require('joi');
+const sequelize = require('sequelize');
 
 
-
-
-
-/**
- * 後台介面 -> 聊天室設定 -> 增加聊天室使用者
- */
-module.exports = async (ctx, next) => {
-
-    let title = ctx.request.body.title;
+//koa 框架所以這個形式, 與sequelize本身無關
+module.exports = async (ctx, next) => {    
     
+    ////創建 sequelize , 
+    counst sequelize = new Sequelize('database(schema)', 'username', 'password', {
+      host: 'localhost',
+      dialect: 'mysql'|'mariadb'|'sqlite'|'postgres'|'mssql',
+
+      pool: {
+        max: 5,
+        min: 0,
+        idle: 10000
+      },
+  // 仅 SQLite 适用
+  storage: 'path/to/database.sqlite'
+});
     
-    
-    //事務測試
+    //定義 model , 即entity
     var Chatroom = sequelize.define('chatroom',{
         chatroom_id:{
-            type: Sequelize.INTEGER,
-            primaryKey: true,
+            type: Sequelize.INTEGER, //
+            primaryKey: true,  //設定pk, 若沒指定pk會自動增設欄位 id 做為 pk
             autoIncrement: true // Automatically gets converted to SERIAL for postgres
           },
         title: Sequelize.STRING,
         create_date:Sequelize.BIGINT,
         enabled: Sequelize.TINYINT
-    },{freezeTableName: true})
+    },{freezeTableName: true //table 名稱設定不要自動加s ex: chatrooms})
 
     
     Chatroom.findOne({
@@ -36,7 +38,7 @@ module.exports = async (ctx, next) => {
     })
 
 
-
+    //事務控制
     // sequelize.transaction((t)=>{
 
     // })
