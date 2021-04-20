@@ -42,6 +42,7 @@ module.exports = async (ctx, next) => {
 
 
     //事務控制
+    //例子1 完成自動commit
     sequelize.transaction((t)=>{
         return Chatroom_user.create({ 
             chatroom_id: chatroom_id, 
@@ -56,6 +57,7 @@ module.exports = async (ctx, next) => {
         });
     })//沒有EXCEPTION 則自動COMMIT
     
+    // 例子2 噴錯回滾
     sequelize.transaction((t)=>{
         return Chatroom_user.create({/**/ }, { transaction: t })
             .then(d => {                
